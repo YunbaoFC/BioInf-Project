@@ -3,8 +3,6 @@
 ################################################################################
 
 # Libraries
-library(gprofiler2)
-install.packages(gprofiler2)
 
 getwd()
 # setwd("Bureau/Sapienza/BioInf/BioInf-Project") # <- Modify this
@@ -26,7 +24,7 @@ View(huri)
 
 # 1.3 Read String
 string <- read.delim("Files/String.txt")
-View(String)
+View(string)
 
 # 1.4 Read Reactome
 reactome <- read.delim("Files/Reactome.txt")
@@ -35,3 +33,4 @@ View(reactome)
 # 1.4 Cardiomyopathy
 cardiomyopathy <- read.delim("Files/Cardiomyopathy.txt")
 View(cardiomyopathy)
+

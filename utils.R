@@ -60,7 +60,7 @@ huri$GeneA <- translate_genes(huri$GeneA, gene_map)
 huri$GeneB <- translate_genes(huri$GeneB, gene_map)
 head(huri)
 
-################################################################################
+################################################################################S
 # 3. Filter String + Translate
 ################################################################################
 library(tidyr)
@@ -104,7 +104,7 @@ clean_interactome <- function(df,
   colnames(df)[1:2] <- c("GeneA", "GeneB")
   #if (!is.null(score_col)) colnames(df)[3] <- "Score"
   
-  # Surp les self-loops
+  # Surp self-loops
   df <- df[df$GeneA != df$GeneB, ]
   # Supr doubles
   df$pair_id <- apply(df[, c("GeneA", "GeneB")], 1, function(x)
@@ -140,16 +140,15 @@ clean_interactome <- function(df,
 }
 
 biogrid <- clean_interactome(ppi_edges[, c("Official.Symbol.Interactor.A", "Official.Symbol.Interactor.B")])
-huri <- clean_interactome(huri[, c("V1", "V2")])
+huri <- clean_interactome(huri[, c("GeneA", "GeneB")])
 string <- clean_interactome(String_sep[, c("ProteinA", "ProteinB", "Score")])
 reactome <- clean_interactome(reactome_genes[, c("Gene1", "Gene2")])
 
-# Write new files
-write.table(biogrid$table_LCC,file = "Files/Biogrid.txt",sep = "\t",row.names = FALSE,quote = FALSE)
-write.table(huri$table_LCC, "Files/Huri.txt", sep = "\t", row.names = FALSE, quote = FALSE)
-write.table(string$table_LCC, "Files/String.txt", sep = "\t", row.names = FALSE, quote = FALSE)
-write.table(reactome$table_LCC, "Files/Reactome.txt", sep = "\t", row.names = FALSE, quote = FALSE)
-
+biogrid_lcc <- biogrid$table_LCC
+huri_lcc <- huri$table_LCC
+string_lcc <- string$table_LCC
+reactome_lcc <- reactome$table_LCC
+  
 ################################################################################
 # 5. Filter Cardiomyopathy file
 ################################################################################
@@ -157,4 +156,39 @@ Cardiomyopathy <- read.delim("Files/Original_files/diseases_.tsv")
 Cardiomyopathy <- subset(Cardiomyopathy, select = c(Associated.genes))
 colnames(Cardiomyopathy) <- c("Genes")
 head(Cardiomyopathy)
+
+################################################################################
+# 6. Filter wrong alias disease genes
+################################################################################
+problematic_genes <- c('AGT', 'FAS', 'ARSB', 'AVP', 'DSC2', 'EPO', 'FHL1', 'GLA', 'HGF', 'LAMA3', 'ATP6', 'ATP8', 'COX1', 'ND1', 'ND2', 'ND3', 'ND4', 'ND5', 'ND6', 'TRNG', 'TRNI', 'TRNK', 'TRNL1', 'TRNT', 'TRNV', 'TRNW', 'RAC1', 'RAF1', 'SKI', 'TNNC1', 'AIP', 'CAP2', 'GCOM1', 'RNASEH1')
+correct_genes <- c('AGXT', 'FASN', 'SLURP1', 'NLRP3', 'DSC3', 'TIMP1', 'CFH', 'NAT8', 'IL6', 'LAMA4', 'MT-ATP6', 'MT-ATP8', 'MT-CO1', 'MT-ND1', 'MT-ND2', 'MT-ND3', 'MT-ND4', 'MT-ND5', 'MT-ND6', 'MT-TG', ' 	MT-TI', ' 	MT-TK', ' 	MT-TL1', ' 	MT-TT', 'MT-TV', 'MT-TW', 'RNASE1', 'RNASE3', 'HHAT', 'TNNI3', 'AURKAIP1', 'SERPINB8', 'MYZAP', 'RNASEH1P1')
+mapping <- setNames(correct_genes, problematic_genes)
+
+corrige_genes <- function(x, mapping) {
+  idx <- x %in% names(mapping)
+  x[idx] <- mapping[x[idx]]
+  x
+}
+
+biogrid_lcc$GeneA <- corrige_genes(biogrid_lcc$GeneA, mapping)
+biogrid_lcc$GeneB <- corrige_genes(biogrid_lcc$GeneB, mapping)
+
+huri_LCC$GeneA <- corrige_genes(huri_LCC$GeneA, mapping)
+huri_LCC$GeneB <- corrige_genes(huri_LCC$GeneB, mapping)
+
+string_lcc$GeneA <- corrige_genes(string_lcc$GeneA, mapping)
+string_lcc$GeneB <- corrige_genes(string_lcc$GeneB, mapping)
+
+reactome_lcc$GeneA <- corrige_genes(reactome_lcc$GeneA, mapping)
+reactome_lcc$GeneB <- corrige_genes(reactome_lcc$GeneB, mapping)
+
+Cardiomyopathy$Genes <- corrige_genes(Cardiomyopathy$Genes, mapping)
+
+################################################################################
+# 7. Write new files
+################################################################################
+write.table(biogrid_lcc,file = "Files/Biogrid.txt",sep = "\t",row.names = FALSE,quote = FALSE)
+write.table(huri_lcc, "Files/Huri.txt", sep = "\t", row.names = FALSE, quote = FALSE)
+write.table(string_lcc, "Files/String.txt", sep = "\t", row.names = FALSE, quote = FALSE)
+write.table(reactome_lcc, "Files/Reactome.txt", sep = "\t", row.names = FALSE, quote = FALSE)
 write.table(Cardiomyopathy,file = "Files/Cardiomyopathy.txt",sep = "\t",row.names = FALSE,quote = FALSE)

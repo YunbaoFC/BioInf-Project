@@ -3,3 +3,5 @@ env/
 .RData
 *.RData
 netx_lab.ipynb
+.RDataTmp
+.Rhistory

@@ -1,4 +1,5 @@
 Files/Original_files/**
+Files/Folds/**
 env/
 .RData
 *.RData
